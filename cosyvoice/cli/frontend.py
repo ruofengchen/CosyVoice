@@ -25,7 +25,7 @@ import os
 import re
 import inflect
 try:
-    import ttsfrd
+    # import ttsfrd
     use_ttsfrd = True
 except ImportError:
     print("failed to import ttsfrd, use WeTextProcessing instead")

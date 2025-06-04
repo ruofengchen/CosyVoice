@@ -16,12 +16,10 @@ import time
 from typing import Generator
 from tqdm import tqdm
 from hyperpyyaml import load_hyperpyyaml
-from modelscope import snapshot_download
 import torch
 from cosyvoice.cli.frontend import CosyVoiceFrontEnd
 from cosyvoice.cli.model import CosyVoiceModel, CosyVoice2Model
 from cosyvoice.utils.file_utils import logging
-from cosyvoice.utils.class_utils import get_model_type
 
 
 class CosyVoice:
@@ -31,13 +29,12 @@ class CosyVoice:
         self.model_dir = model_dir
         self.fp16 = fp16
         if not os.path.exists(model_dir):
-            model_dir = snapshot_download(model_dir)
+            raise ValueError('{} not found!'.format(model_dir))
         hyper_yaml_path = '{}/cosyvoice.yaml'.format(model_dir)
         if not os.path.exists(hyper_yaml_path):
             raise ValueError('{} not found!'.format(hyper_yaml_path))
         with open(hyper_yaml_path, 'r') as f:
             configs = load_hyperpyyaml(f)
-        assert get_model_type(configs) != CosyVoice2Model, 'do not use {} for CosyVoice initialization!'.format(model_dir)
         self.frontend = CosyVoiceFrontEnd(configs['get_tokenizer'],
                                           configs['feat_extractor'],
                                           '{}/campplus.onnx'.format(model_dir),
@@ -146,13 +143,12 @@ class CosyVoice2(CosyVoice):
         self.model_dir = model_dir
         self.fp16 = fp16
         if not os.path.exists(model_dir):
-            model_dir = snapshot_download(model_dir)
+            raise ValueError('{} not found!'.format(model_dir))
         hyper_yaml_path = '{}/cosyvoice2.yaml'.format(model_dir)
         if not os.path.exists(hyper_yaml_path):
             raise ValueError('{} not found!'.format(hyper_yaml_path))
         with open(hyper_yaml_path, 'r') as f:
             configs = load_hyperpyyaml(f, overrides={'qwen_pretrain_path': os.path.join(model_dir, 'CosyVoice-BlankEN')})
-        assert get_model_type(configs) == CosyVoice2Model, 'do not use {} for CosyVoice2 initialization!'.format(model_dir)
         self.frontend = CosyVoiceFrontEnd(configs['get_tokenizer'],
                                           configs['feat_extractor'],
                                           '{}/campplus.onnx'.format(model_dir),
